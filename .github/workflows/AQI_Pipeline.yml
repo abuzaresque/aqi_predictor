@@ -1,0 +1,39 @@
+name: End-to-End AQI Pipeline
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # Every hour
+  workflow_dispatch:
+
+jobs:
+  aqi-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run AQI Fetch Script
+      env:
+        HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+      run: |
+        echo "$HOPSWORKS_API_KEY" > hopsworks_api_key.txt
+        export HOPSWORKS_API_KEY=$(cat hopsworks_api_key.txt)
+        python fetch_aqi.py
+
+    - name: Run Feature Engineering Script
+      env:
+        HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+      run: |
+        echo "$HOPSWORKS_API_KEY" > hopsworks_api_key.txt
+        export HOPSWORKS_API_KEY=$(cat hopsworks_api_key.txt)
+        python feature_scripts.py
