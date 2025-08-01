@@ -1,0 +1,2 @@
+openweather_api=38c5bdf8424629e6d5016de1f1d0aeb1
+hopsworks_api=hctNg9yeOfMInvXA.NrS1SbDm5MLAgxTeR1X34SL7cWFSUTqiGnNPDInuMH7xLZeGVr8s7S3u30l6hU7c

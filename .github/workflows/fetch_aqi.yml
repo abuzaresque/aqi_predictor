@@ -1,0 +1,31 @@
+name: Fetch AQI Raw Data Daily
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # every hour at minute 0 (adjust if needed)
+  workflow_dispatch:
+
+jobs:
+  fetch-aqi:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run AQI Data Fetch
+      env:
+        HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+      run: |
+        echo "$HOPSWORKS_API_KEY" > hopsworks_api_key.txt
+        export HOPSWORKS_API_KEY=$(cat hopsworks_api_key.txt)
+        python fetch_aqi.py
