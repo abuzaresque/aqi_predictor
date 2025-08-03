@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 import joblib
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import os
 from dotenv import load_dotenv
 
@@ -82,7 +83,7 @@ for name, target in target_cols.items():
     print(f"✅ Trained model for {name}: Best Params = {grid.best_params_}")
 
 # --- Predict Next 3 Days using today's latest feature row ---
-today = datetime.utcnow().date()
+today = datetime.now(ZoneInfo("Asia/Karachi")).date()
 
 # Read online feature store
 df_online = fg.read(read_options={"online": True})
@@ -110,9 +111,12 @@ print("\n📊 Actual AQI for previous 3 recorded days:")
 df["date"] = df["time"].dt.floor("D")
 daily_summary = df.groupby("date")["pm2_5"].mean().dropna().sort_index()
 
+# 🔧 Fix index type for safe comparison
+daily_summary.index = pd.to_datetime(daily_summary.index).date
+
 for offset in range(3, 0, -1):
     day = today - timedelta(days=offset)
-    if day in daily_summary:
+    if day in daily_summary.index:
         avg_pm = daily_summary[day]
         aqi = calculate_neqs_aqi_pm25(avg_pm)
         print(f"Day -{offset} ({day}): PM2.5 = {avg_pm:.2f} → AQI = {aqi}")

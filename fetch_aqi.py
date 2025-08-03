@@ -1,9 +1,10 @@
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from dotenv import load_dotenv
 import hopsworks
+from zoneinfo import ZoneInfo
 
 # --- Load API Keys from .env ---
 load_dotenv()
@@ -24,10 +25,10 @@ def fetch_openweather_full(lat, lon, api_key):
 
 
     if "list" not in air_data or not air_data["list"]:
-        raise Exception("Air Pollution data error")
+        raise ValueError("Air Pollution data error")
 
     air = air_data["list"][0]["components"]
-    timestamp = datetime.utcfromtimestamp(air_data["list"][0]["dt"])
+    timestamp = datetime.fromtimestamp(air_data["list"][0]["dt"], tz=timezone.utc).astimezone(ZoneInfo("Asia/Karachi"))
 
     # Weather
     weather_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
